@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>搶票大作戰 × 五年養成蛋</title>
+<meta name="description" content="搶到門票，領一顆夢想蛋，花五年把它養成職人夥伴。正修科大五專 116 學年度升學小遊戲。">
+<meta name="theme-color" content="#131A3A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.65;font-size:17px;min-height:100%;color-scheme:var(--scheme,light)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+#app{max-width:540px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:0 16px 32px}
+#hud{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 0;background:var(--hud,var(--bg))}
+#prog{flex:1;min-width:0}
+#prog .lab{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prog .bar{height:8px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:3px}
+#prog .bar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .4s}
+.hbtn{flex:none;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:5px 9px;font-size:12.5px;font-weight:700;line-height:1.25;color:var(--card-ink);text-align:center}
+.hbtn b{display:block;font-size:17px;line-height:1.15}
+.hbtn.pop{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.18)}}
+#stage{flex:1;display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.card{background:var(--card);color:var(--card-ink);border-radius:var(--r);padding:18px 16px;border:2px solid var(--line)}
+h1{font-size:32px;line-height:1.25;font-weight:900;font-family:var(--display);text-wrap:balance}
+h2{font-size:21px;line-height:1.35;font-weight:900;font-family:var(--display);margin-bottom:6px;text-wrap:balance}
+h3{font-size:17px;font-weight:900;margin:14px 0 4px}
+p+p{margin-top:8px}
+.small{font-size:14.5px}.muted{color:var(--muted2)}
+.kicker{font-size:14px;font-weight:900;color:var(--kick)}
+.cta{display:block;width:100%;background:var(--pri);color:var(--pri-ink);font-weight:900;font-size:18px;padding:14px 16px;border-radius:var(--r);box-shadow:0 4px 0 var(--pri-d);text-align:center;text-decoration:none}
+.cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--pri-d)}
+.cta[disabled]{opacity:.45;box-shadow:none;cursor:not-allowed}
+.cta.ghost{background:var(--card);color:var(--card-ink);border:2px solid var(--line);box-shadow:none;font-size:16px;padding:11px 14px}
+.cta.line{background:#06C755;color:#fff;box-shadow:0 4px 0 #04883a}
+.opts{display:grid;gap:10px;margin-top:12px}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;background:var(--opt);color:var(--card-ink);border:2px solid var(--line);border-radius:var(--r);padding:12px 14px;font-weight:700;font-size:16.5px;line-height:1.45}
+.opt>span:first-child{font-size:26px;flex:none}
+.opt:hover{border-color:var(--acc)}
+.opt.sel{border-color:var(--acc);background:var(--sel)}
+.opt.ok{border-color:#1FA37A;background:#E3F7EE;color:#0d3b2c}
+.opt.no{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hint{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--sel);font-size:15.5px;font-weight:700;color:var(--card-ink)}
+.tag{display:inline-block;font-size:13px;font-weight:900;padding:1px 9px;border-radius:99px;color:#fff;background:var(--c,#6B7785);white-space:nowrap}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-top:8px;font-size:15.5px}
+dl.kv dt{font-weight:900;white-space:nowrap}
+ul.plain{padding-left:1.2em;font-size:15.5px}
+.warn{background:#FFE600;color:#7A0025;border:3px solid #E6004C;border-radius:14px;padding:11px 13px;font-weight:900;font-size:16px;line-height:1.55}
+.warn u{text-decoration-thickness:2px}
+/* 報到 */
+.avs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.av{aspect-ratio:1;border-radius:50%;border:3px solid var(--line);background:var(--c,#eee);display:grid;place-items:center;font-size:30px;overflow:hidden;padding:0}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.av[aria-pressed=true]{border-color:var(--acc);box-shadow:0 0 0 4px var(--sel)}
+.me{display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;background:var(--c,#eee);flex:none;border:3px solid #fff}
+.me img{width:100%;height:100%;object-fit:cover}
+input.name{width:100%;font:inherit;font-weight:700;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;color:#14213D;margin-top:6px}
+label.f{display:block;font-weight:900;font-size:15.5px;margin-top:12px}
+/* 彈出視窗 */
+#overlay{position:fixed;inset:0;z-index:20;background:rgba(10,16,40,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--sheet,var(--card));color:var(--card-ink);width:100%;max-width:540px;max-height:88vh;max-height:88dvh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 16px 26px;animation:up .25s}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet header{display:flex;align-items:center;gap:8px;position:sticky;top:-8px;background:var(--sheet,var(--card));padding:10px 0 8px;z-index:1}
+.sheet header h2{flex:1;margin:0}
+.x{font-size:15px;font-weight:900;border:2px solid var(--line);border-radius:10px;padding:4px 12px;background:var(--opt)}
+#toasts{position:fixed;left:0;right:0;bottom:18px;z-index:30;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.toast{background:#14213D;color:#fff;font-weight:700;font-size:15px;padding:9px 16px;border-radius:99px;animation:up .25s;max-width:92%}
+/* 關鍵時間 */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{font-size:14px;font-weight:900;padding:5px 12px;border-radius:99px;border:2px solid var(--c,var(--line));color:var(--card-ink);background:var(--opt)}
+.chip[aria-pressed=true]{background:var(--c,#14213D);color:#fff}
+.tl{list-style:none;padding:0;margin:10px 0 0 8px;border-left:4px solid var(--line)}
+.tl li{position:relative;padding:0 0 14px 16px}
+.tl li::before{content:"";position:absolute;left:-10px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--c,#6B7785);border:2px solid var(--card)}
+.tl .mon{font-weight:900;font-size:15px;color:var(--muted2);padding-bottom:6px}
+.tl .mon::before{display:none}
+.tl .when{font-weight:900;font-size:16px;font-variant-numeric:tabular-nums}
+.tl .what{font-weight:700}
+.tl .past{opacity:.55}
+.tl .quit .what{display:inline-block;background:#FFE600;color:#7A0025;border:2px solid #E6004C;border-radius:8px;padding:0 8px;font-weight:900}
+.tl a.gc{display:inline-block;margin-top:3px;font-size:14px;font-weight:900;color:var(--link);text-decoration:underline}
+.count{background:var(--sel);border-radius:12px;padding:10px 12px;font-weight:700;font-size:15.5px}
+.disc{font-size:13px;color:var(--muted2);margin-top:10px}
+/* 百寶袋 */
+.bag{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:left;background:var(--opt);font-weight:900;font-size:15px;color:var(--card-ink);display:flex;gap:8px;align-items:center;line-height:1.3}
+.item span{font-size:24px}
+.item.lock{opacity:.5;border-style:dashed;font-weight:700}
+.dl{border:2px solid var(--line);border-radius:14px;margin-top:8px;background:var(--opt);overflow:hidden}
+.dl summary{font-weight:900;padding:10px 12px;cursor:pointer;border-left:8px solid var(--c)}
+.dl .in{padding:4px 12px 12px;font-size:15.5px}
+.steps4{display:grid;gap:6px;margin-top:8px;padding:0;list-style:none}
+.steps4 li{display:flex;gap:8px;align-items:center;font-weight:700;font-size:15.5px;padding:8px 10px;border-radius:12px;border:2px solid var(--line);background:var(--opt)}
+.steps4 li.on{border-color:var(--acc);background:var(--sel)}
+.steps4 i{font-style:normal;flex:none;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
+.dlbox{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0 10px;background:var(--opt)}
+.dlgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.dlb{background:var(--c);color:#fff;border-radius:10px;padding:8px 4px;font-weight:900;font-size:15px;line-height:1.25}
+.dlb small{display:block;font-weight:700;font-size:12px;opacity:.9}
+.dlb.all{grid-column:1/-1;background:#14213D;padding:11px 4px;font-size:16px}
+.multi .opt{position:relative;padding-right:40px}
+.multi .opt[aria-pressed=true]{border-color:var(--acc);background:var(--sel)}
+.multi .opt[aria-pressed=true]::after{content:"✓";position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:900}
+.remind{color:#7A2FE0;font-weight:900}
+/* 版面想法：夜晚的售票亭。深藍夜色當底，票券用亮黃與桃紅，蛋與夥伴用薄荷綠。 */
+:root{--font:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;--display:var(--font);--scheme:dark;
+--bg:#131A3A;--ink:#fff;--card:#FFFDF6;--card-ink:#1B2350;--line:#D5D9EE;--pri:#FFD23F;--pri-ink:#1B2350;--pri-d:#B58A00;
+--acc:#FF4F8B;--kick:#D81B60;--sel:#FFE9F1;--opt:#fff;--muted:#B9C0E6;--muted2:#5A618C;--link:#2B4BD8;--focus:#3DDBB4;--track:#2A3366;--r:18px;--mint:#3DDBB4}
+body{background-image:radial-gradient(circle at 20% 0,#27337a 0,transparent 42%),radial-gradient(circle at 90% 12%,#3a1f5e 0,transparent 36%);background-attachment:fixed}
+#hud{background:#131A3Aee}
+.marquee{text-align:center;padding:26px 16px 22px;border:3px solid var(--pri);background:#1B2350;color:#fff;position:relative}
+.marquee::before{content:"";position:absolute;inset:6px;border:2px dotted #FFD23F88;border-radius:12px;pointer-events:none}
+.marquee h1{font-size:40px;color:var(--pri);letter-spacing:.04em}
+.marquee .x2{font-size:22px;font-weight:900;color:var(--mint);margin-top:2px}
+.marquee .kicker{color:#FF9DBF}
+.panels{display:grid;gap:10px}
+.panel{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center}
+.panel .pic{font-size:44px;text-align:center;line-height:1}
+/* 票券 */
+.tix{display:grid;gap:10px;margin-top:10px}
+.tk{display:block;width:100%;text-align:left;border-radius:14px;background:#fff;color:var(--card-ink);border:2px solid var(--line);border-left:12px solid var(--c);padding:10px 12px;position:relative}
+.tk::after{content:"";position:absolute;right:54px;top:0;bottom:0;border-left:2px dashed var(--line)}
+.tk .hd{display:flex;gap:8px;align-items:center;font-weight:900;font-size:17px;padding-right:58px}
+.tk .st{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:900;color:var(--muted2);width:40px;text-align:center;line-height:1.2}
+.tk .bd{margin-top:8px;padding-right:58px;font-weight:400}
+.tk.open{border-color:var(--c)}
+/* 搶票 */
+.rail{position:relative;display:flex;height:74px;border-radius:14px;overflow:hidden;background:#232B5C;margin:14px 0 6px}
+.rail .seg{display:grid;place-items:center;text-align:center;font-size:13.5px;font-weight:900;color:#fff;line-height:1.25;padding:0}
+.rail .seg.w{background:var(--c);cursor:pointer}
+.rail .seg.done{filter:saturate(.35) brightness(.8)}
+.rail .seg.ex{background:repeating-linear-gradient(45deg,#3a4380,#3a4380 6px,#2c3470 6px,#2c3470 12px);color:#D9DEFF;font-size:12px}
+.rail .cur{position:absolute;top:0;bottom:0;width:4px;background:#fff;box-shadow:0 0 10px 3px #fff9;left:0;pointer-events:none}
+.rail .cur::after{content:"▼";position:absolute;top:-2px;left:-7px;font-size:13px;color:#fff}
+.months{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--muted2)}
+.grab{font-size:24px;padding:18px;background:var(--acc);color:#fff;box-shadow:0 5px 0 #A91550}
+.got{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+/* 蛋 */
+.eggbox{display:grid;place-items:center;padding:6px 0 0}
+.eggbox svg{width:170px;height:auto;display:block}
+.wob{animation:wob 2.2s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.shake{animation:shk .35s linear 3}
+@keyframes shk{25%{transform:translateX(-7px) rotate(-6deg)}75%{transform:translateX(7px) rotate(6deg)}}
+.badges{display:flex;gap:6px;justify-content:center;min-height:34px;margin-top:4px}
+.badges span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--c);font-size:18px;border:2px solid #fff;animation:pop .5s}
+.year{display:flex;gap:6px;margin-bottom:8px}
+.year i{flex:1;height:8px;border-radius:99px;background:var(--line)}
+.year i.on{background:var(--mint)}
+.news{background:#E6FBF5;border:2px solid var(--mint);border-radius:12px;padding:9px 12px;font-size:15.5px;margin:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.grid2 .opt{flex-direction:column;align-items:flex-start;gap:0;padding:10px 12px}
+.grid2 .opt small{font-weight:700;color:var(--muted2);font-size:13px}
+/* 票根 */
+.stub{background:var(--pri);color:#1B2350;border-radius:18px;padding:0;overflow:hidden;position:relative;border:0}
+.stub .top{padding:16px 16px 12px;display:flex;gap:12px;align-items:center}
+.stub .top .nm{font-size:24px;font-weight:900;line-height:1.25}
+.stub .cut{border-top:3px dashed #1B2350;position:relative;margin:0 14px}
+.stub .cut::before,.stub .cut::after{content:"";position:absolute;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--bg)}
+.stub .cut::before{left:-28px}.stub .cut::after{right:-28px}
+.stub .body{padding:12px 16px 16px}
+.stub dl.kv dt{color:#5b4a00}
+.bar{height:34px;margin-top:10px;background:repeating-linear-gradient(90deg,#1B2350 0 3px,transparent 3px 5px,#1B2350 5px 6px,transparent 6px 10px,#1B2350 10px 14px,transparent 14px 16px)}
+#prog .bar{height:8px;margin-top:3px;background:var(--track)}
+.marquee .tagline{display:inline-block;margin-top:10px;background:#FF4F8B;color:#fff;font-weight:900;font-size:15px;border-radius:99px;padding:2px 14px}
+.marquee .lead1{font-size:26px;font-weight:900;color:#fff;margin-top:12px;line-height:1.3}
+h2.mission{background:#1B2350;color:#fff;border-radius:12px;padding:10px 14px;margin-top:6px}
+.hl{color:#FFD23F;font-weight:900}
+.news.wing{background:#FFF6D6;border-color:#FFB627}
+.egg-remind{margin:2px 0 4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud" hidden>
+    <button class="hbtn" id="btnBack" aria-label="上一步"><b>←</b>上一步</button>
+    <div id="prog"></div>
+    <button class="hbtn" id="btnTl" aria-label="關鍵時間"><b>🗓️</b>關鍵時間</button>
+    <button class="hbtn" id="btnBag" aria-label="百寶袋"><b>🎒</b>百寶袋</button>
+  </header>
+  <main id="stage" aria-live="polite"></main>
+</div>
+<div id="overlay" hidden></div>
+<div id="toasts" aria-live="polite"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<noscript><p style="padding:20px">這個遊戲需要開啟 JavaScript 才能玩。</p></noscript>
+<script>
+"use strict";
+/* =====================================================================
+ *  資料層：每年只需要改這一段（學年度、日期、電話、LINE、獎學金、各科介紹）
+ *  日期格式一律 "YYYY-MM-DD"（西元）。116 學年度 = 2027 年入學。
+ *  來源：116學年度五專招生重要日程表
+ * ===================================================================== */
+const D = {
+  cycle: "116學年度",
+  school: { name: "正修科技大學", unit: "招生處", tel: "07-7310203", line: "https://line.me/R/ti/p/@csu1111", lineId: "@csu1111" },
+  bonus: "經五專完全免試入學錄取正修並完成註冊，可獲得入學獎學金 5,000 元。",
+  paths: {
+    wan: { n: 1, name: "五專完全免試入學", short: "完全免試", color: "#E8641B",
+      when: "會考前（4 月底報名、5 月中公布）",
+      rules: ["不採計會考成績，會考前就知道結果", "只能選 1 所學校的 1 個科", "向自己就讀的國中報名", "國中應屆畢業生才能參加"] },
+    you: { n: 2, name: "五專優先免試入學", short: "優先免試", color: "#2A76C9",
+      when: "會考後（5 月中報名、6 月中公布）",
+      rules: ["全國一區，不限地區、學校和科別", "上網最多可以填 30 個志願", "電腦依照你排的順序統一分發"] },
+    lian: { n: 3, name: "南區五專聯合免試入學", short: "聯合免試", color: "#17936C",
+      when: "優先免試之後（6 月下旬報名、7 月初現場選科）",
+      rules: ["分北、中、南三區，每區選 1 所學校報名（正修在南區）", "親自到學校，依順序現場選科並報到", "前兩個管道沒用完的名額會加進來"] },
+    xu: { n: 4, name: "五專免試入學續招", short: "免試續招", color: "#7B52C7",
+      when: "聯合免試之後（日期由各校公告）",
+      rules: ["聯合免試之後還有名額的學校才會辦理", "報名方式和日期請看各校公告"] }
+  },
+  events: [
+    { p: "all", s: "2027-01-15", t: "招生簡章公告", d: "完全免試、優先免試、聯合免試的簡章都在這天公告，可以上網下載。" },
+    { p: "all", s: "2027-03-04", e: "2027-03-06", t: "國中教育會考報名", d: "由就讀的國中協助報名。" },
+    { p: "wan", s: "2027-04-27", e: "2027-05-03", t: "完全免試報名", d: "向就讀的國中報名，只能選 1 所學校的 1 個科。" },
+    { p: "wan", s: "2027-05-13", t: "完全免試錄取公告", d: "會考前就知道結果。" },
+    { p: "all", s: "2027-05-15", e: "2027-05-16", t: "國中教育會考", d: "考試日。" },
+    { p: "wan", s: "2027-05-17", e: "2027-06-11", t: "完全免試報到", d: "實際報到日期由各校自訂，請看錄取學校的通知。" },
+    { p: "you", s: "2027-05-17", e: "2027-05-21", t: "優先免試報名", d: "國中集體報名 5/17–5/21；個別網路報名 5/18–5/21。" },
+    { p: "you", s: "2027-06-03", e: "2027-06-07", t: "優先免試上網選填志願", d: "最多可以填 30 個志願，請依照想讀的順序排列。" },
+    { p: "all", s: "2027-06-04", t: "會考成績公布", d: "寄發成績單並開放網路查詢。" },
+    { p: "you", s: "2027-06-11", t: "優先免試放榜", d: "上午 9:00 起可以上網查詢分發結果。" },
+    { p: "wan", s: "2027-06-15", t: "完全免試放棄截止", d: "報到後想放棄錄取資格，要在這天之前辦理。", quit: 1 },
+    { p: "you", s: "2027-06-15", t: "優先免試報到及放棄截止", d: "中午 12:00 前完成錄取報到；想放棄錄取也是這個時間截止。", quit: 1 },
+    { p: "lian", s: "2027-06-18", e: "2027-06-24", t: "聯合免試報名", d: "6/18 公告實際招生名額。每區選 1 所學校報名，正修在南區。" },
+    { p: "lian", s: "2027-07-02", t: "聯合免試寄發通知單", d: "寄發成績和現場登記分發報到通知單。" },
+    { p: "lian", s: "2027-07-07", t: "聯合免試現場選科報到", d: "親自到報名的學校，依順序現場選科並完成報到。記得帶畢業證書正本。" },
+    { p: "lian", s: "2027-07-12", t: "聯合免試放棄截止", d: "中午 12:00 前，錄取後想放棄要在這之前辦理。", quit: 1 }
+  ]
+};
+const PORD = ["wan", "you", "lian", "xu"];
+/* 六個科：one 一句話、like 適合誰、learn 學什麼、feat 正修特色、jobs 未來職業、url 科網頁 */
+const DEPT = {
+  civ: { name: "土木科", icon: "🌉", color: "#D9692B",
+    one: "橋梁、道路、捷運、隧道，都是這一科的人蓋出來的。",
+    like: ["看到大橋或捷運工地，會想知道它是怎麼蓋的", "想守護大家的安全", "喜歡到戶外動手量一量、算一算"],
+    learn: "學測量、畫工程圖和各種蓋法，還會操作無人機，用 3D 雷射掃描把地形變成立體模型。",
+    feat: ["學校裡就有測量、製圖的證照考場", "有無人機操作和 3D 建模的證照培訓", "學習用再生材料，蓋出更環保的城市"],
+    jobs: ["土木工程師", "工地主任", "測量工程師"], url: "https://civil.csu.edu.tw/" },
+  arc: { name: "建築科", icon: "🏛️", color: "#D6457A",
+    one: "住的家、學校、百貨公司、地標大樓，都從這一科的設計圖開始。",
+    like: ["喜歡畫圖、做模型，或在遊戲裡蓋房子", "做出作品會很有成就感，願意花時間把它做好", "喜歡自己想點子、解決問題"],
+    learn: "學建築設計、畫圖和做模型，也用電腦蓋出 3D 立體建築，還會用到 VR、3D 列印、雷射切割和空拍機。",
+    feat: ["五專建築科畢業，就有資格報考建築師", "用數位工具把設計做成真的作品", "把 AI 也放進設計課裡"],
+    jobs: ["建築師", "室內設計師", "景觀設計師"], url: "https://archi.csu.edu.tw/" },
+  mec: { name: "機械科", icon: "🦾", color: "#4C5FE0",
+    one: "電梯、捷運車廂、工廠裡的機械手臂，都靠這一科設計和製造。",
+    like: ["喜歡把東西拆開，看看裡面怎麼運作", "喜歡動手做，自己設計新東西", "喜歡和隊友一起完成作品"],
+    learn: "學機械設計、製造和自動控制。先用電腦畫出零件，再用機器把它做出來。",
+    feat: ["有五軸切削技術人才培育基地", "有很多間實驗室，可以玩機器人和自動化設備", "和企業合作，在學期間有機會實習"],
+    jobs: ["機械工程師", "自動化工程師", "CNC 加工技師"], url: "https://me.csu.edu.tw/" },
+  ele: { name: "電機科", icon: "⚡", color: "#C98A00",
+    one: "電從哪裡來、怎麼送到每個家、電動車怎麼跑，都由這一科負責。",
+    like: ["對電動車、太陽能這類東西很好奇", "不排斥數學課和自然課", "喜歡挑戰新東西"],
+    learn: "學電力與能源、自動控制和 AI 應用，也學電動車和電動機車的技術。",
+    feat: ["輔導考取太陽能、工業配線、機電整合等證照", "有電動車機電整合的訓練", "有校外實習和產學合作"],
+    jobs: ["電機工程師", "自動控制工程師", "電動車工程師"], url: "https://electrical.csu.edu.tw/" },
+  etn: { name: "電子科", icon: "📡", color: "#0F9B8A",
+    one: "手機裡的晶片、會自動亮的路燈、偵測空氣的感測器，都是這一科的作品。",
+    like: ["對手機、遊戲機裡的晶片和零件很好奇", "喜歡動手做實驗、接電路", "願意花時間研究，直到弄懂為止"],
+    learn: "學晶片的製作與測試、物聯網（讓東西連上網路）、AI 和綠能科技。",
+    feat: ["半導體加上 AI，兩種技能一起學", "帶學生參加國際發明展和校外競賽", "和半導體公司合作，安排校外實習"],
+    jobs: ["電子工程師", "半導體製程工程師", "設備工程師"], url: "https://ee.csu.edu.tw/" },
+  cs: { name: "資工科", icon: "🤖", color: "#7A4FE0",
+    one: "App、遊戲、AI 助理、網路安全，都靠這一科寫程式來完成。",
+    like: ["喜歡寫程式、玩邏輯解謎", "喜歡自己動手解決問題", "對 AI 和新科技很好奇"],
+    learn: "學程式設計、AI 應用、XR（把虛擬和真實混在一起的技術）和資訊安全。",
+    feat: ["三大重點：AI 應用、XR 技術、資訊安全", "軟體和硬體一起學", "有實習和就業的合作夥伴"],
+    jobs: ["軟體設計師", "AI 工程師", "資安工程師"], url: "https://csie.csu.edu.tw/" }
+};
+const DORD = ["civ", "arc", "mec", "ele", "etn", "cs"];
+const ADV = {
+  free: "五專前三年<b>免學費</b>，公立、私立學校都一樣，只需要繳雜費等其他費用。",
+  later: "專四、專五就讀私立學校，每學期學雜費<b>減免 17,500 元</b>。",
+  wing: "還可以申請<b>五專展翅計畫</b>：合作企業每個月提供至少 6,000 元生活獎學金，教育部補助專四、專五的學雜費，畢業後到這家企業工作 2 年。",
+  lab: "五專是大專教育的一部分。在正修，你會走進<b>科技大學的實驗室</b>，用大學的設備，由大學老師帶著你動手做。",
+  cert: "幾乎每一科都有對應的<b>專業證照</b>，學校會陪你準備和考取，把實力變成看得見的證明。",
+  intern: "專四、專五有<b>畢業專題</b>，高年級還會安排到<b>企業實習</b>，提早認識真正的職場。",
+  degree: "讀滿五年畢業，就能拿到<b>副學士學位</b>，那時候你大約 20 歲。"
+};
+const AFTER = [
+  { icon: "🎓", name: "繼續升學", d: "報考二技，再讀 2 年，大約 22 歲拿到學士學位。" },
+  { icon: "💼", name: "工作＋進修一起來", d: "白天上班領薪水，晚上或假日讀二技進修部。" },
+  { icon: "🚀", name: "先進入職場", d: "帶著五年的實作經驗和證照直接就業。" }
+];
+const AVS = [["🦊", "#FFD9B8"], ["🐼", "#DCEBDD"], ["🐯", "#FFE7A3"], ["🐧", "#CFE4FF"], ["🐨", "#E3DDF5"], ["🐸", "#CDEFC4"], ["🐰", "#FFD6E4"]];
+
+/* ---------------- 小工具 ---------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const WK = "日一二三四五六";
+const dt = s => new Date(s + "T00:00:00");
+const md = s => { const d = dt(s); return `${d.getMonth() + 1}/${d.getDate()}（${WK[d.getDay()]}）`; };
+const when = e => e.e && e.e !== e.s ? `${md(e.s)}–${md(e.e)}` : md(e.s);
+const TODAY = (() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); })();
+const pname = p => p === "all" ? "共同" : D.paths[p].short;
+const pcolor = p => p === "all" ? "#5E6B7A" : D.paths[p].color;
+const tag = p => `<span class="tag" style="--c:${pcolor(p)}">${pname(p)}</span>`;
+const nick = p => APP.skin[p].nick;
+const who = () => esc(S.name || "同學");
+
+/* ---------------- 進度儲存（只存在這台裝置） ---------------- */
+const base = () => ({ step: 0, name: "", av: 0, photo: "", sc: {}, dept: "", bag: [], x: {} });
+let S = base();
+function save() { try { localStorage.setItem(APP.key, JSON.stringify(S)); } catch (e) {} }
+function load() { try { const v = JSON.parse(localStorage.getItem(APP.key)); if (v && typeof v.step === "number") return v; } catch (e) {} return null; }
+function reset() { try { localStorage.removeItem(APP.key); } catch (e) {} S = base(); }
+
+/* ---------------- 音效與彩帶 ---------------- */
+let AC = null;
+function beep(seq) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    let t = AC.currentTime;
+    seq.forEach(([f, d]) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(.07, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d); t += d * .8; });
+  } catch (e) {}
+}
+const good = () => beep([[660, .1], [880, .16]]);
+const bad = () => beep([[220, .14]]);
+const win = () => beep([[523, .12], [659, .12], [784, .12], [1047, .28]]);
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const c = $("#fx"), g = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
+  const cols = ["#FF5C8A", "#FFC93C", "#3DDBB4", "#5B8DEF", "#fff"];
+  const P = Array.from({ length: 90 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .5, v: 2 + Math.random() * 4, w: 6 + Math.random() * 6, r: Math.random() * 6, c: cols[Math.random() * 5 | 0], s: Math.random() * 2 - 1 }));
+  let n = 0;
+  (function tick() {
+    g.clearRect(0, 0, c.width, c.height);
+    P.forEach(p => { p.y += p.v; p.x += p.s; p.r += .1; g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.w / 4, p.w, p.w / 2); g.restore(); });
+    if (++n < 170) requestAnimationFrame(tick); else g.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+/* ---------------- 彈出視窗、提示 ---------------- */
+function closeSheet() { const o = $("#overlay"); o.hidden = true; o.innerHTML = ""; }
+function sheet(title, html) {
+  const o = $("#overlay");
+  o.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${title}</h2><button class="x" data-x>關閉</button></header>${html}</div>`;
+  o.hidden = false;
+  o.onclick = e => { if (e.target === o || e.target.closest("[data-x]")) closeSheet(); };
+  $(".x", o).focus();
+  return $(".sheet", o);
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  const box = $("#toasts"); while (box.children.length > 1) box.firstChild.remove();
+  box.append(t); setTimeout(() => t.remove(), 2200);
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#overlay").hidden) closeSheet(); });
+
+/* ---------------- 暱稱與大頭照 ---------------- */
+function meHTML(size = 56, extra = "") {
+  const a = AVS[S.av] || AVS[0];
+  return `<span class="me" style="width:${size}px;height:${size}px;font-size:${size * .56}px;--c:${a[1]}">${S.photo ? `<img src="${S.photo}" alt="">` : a[0]}</span>${extra}`;
+}
+function pickPhoto(capture) {
+  return new Promise(res => {
+    const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; if (capture) inp.setAttribute("capture", "user");
+    inp.onchange = () => {
+      const f = inp.files && inp.files[0]; if (!f) return res(null);
+      const url = URL.createObjectURL(f), im = new Image();
+      im.onload = () => {
+        const c = document.createElement("canvas"), n = 240, s = Math.min(im.naturalWidth, im.naturalHeight); c.width = c.height = n;
+        c.getContext("2d").drawImage(im, (im.naturalWidth - s) / 2, (im.naturalHeight - s) / 2, s, s, 0, 0, n, n);
+        URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", .85));
+      };
+      im.onerror = () => { toast("這張照片打不開，換一張試試"); res(null); }; im.src = url;
+    };
+    inp.click();
+  });
+}
+/* o：kicker、title、lead、btn */
+function profileScene(o) {
+  const draw = () => {
+    stage(`<div class="card"><p class="kicker">${o.kicker}</p><h2>${o.title}</h2><p>${o.lead}</p>
+      <label class="f" for="nm">你的暱稱</label><input class="name" id="nm" maxlength="8" placeholder="例如：小安" value="${esc(S.name)}" autocomplete="off">
+      <p class="f">選一張代表你的大頭照</p>
+      <div class="avs">${AVS.map((a, i) => `<button class="av" style="--c:${a[1]}" data-i="${i}" aria-pressed="${!S.photo && S.av === i}" aria-label="動物頭像 ${i + 1}">${a[0]}</button>`).join("")}
+        <button class="av" id="ph" style="--c:#fff" aria-pressed="${!!S.photo}" aria-label="用自己的照片">${S.photo ? `<img src="${S.photo}" alt="">` : "📷"}</button></div>
+      <p class="small muted" style="margin-top:8px">點 📷 可以自拍或選一張照片。照片只留在這台裝置裡，不會上傳。</p></div>
+      <button class="cta" id="ok">${o.btn}</button>`);
+    const keep = () => { S.name = $("#nm").value.trim(); };
+    $$(".av[data-i]").forEach(b => b.onclick = () => { keep(); S.av = +b.dataset.i; S.photo = ""; draw(); });
+    $("#ph").onclick = async () => { keep(); const p = await pickPhoto(true); if (p) { S.photo = p; draw(); } };
+    $("#ok").onclick = () => { keep(); if (!S.name) { toast("先取一個暱稱吧"); $("#nm").focus(); return; } good(); next(); };
+  };
+  draw();
+}
+
+/* ---------------- 關鍵時間 ＋ Google 日曆 ---------------- */
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+const endEx = e => { const d = dt(e.e || e.s); d.setDate(d.getDate() + 1); return d; };
+const gcal = e => "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`【五專】${e.t}`) +
+  `&dates=${ymd(dt(e.s))}/${ymd(endEx(e))}&details=` + encodeURIComponent(`${e.d}\n（${D.cycle}，日期以正式招生簡章為準）\n${D.school.name}${D.school.unit} ${D.school.tel}`) + "&ctz=Asia/Taipei";
+function saveFile(blob, name) {
+  try {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); return true;
+  } catch (e) { return false; }
+}
+function fold(line) {
+  const enc = new TextEncoder(); let out = "", cur = "", len = 0;
+  for (const ch of line) { const b = enc.encode(ch).length; if (len + b > 73) { out += cur + "\r\n "; cur = ""; len = 1; } cur += ch; len += b; }
+  return out + cur;
+}
+const escI = s => s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+/* f：wan / you / lian 下載單一管道（含共同日期）；every 下載四個管道全部 */
+function downloadIcs(f) {
+  const evs = eventsOf(f), label = f === "every" ? "四個管道" : D.paths[f].short;
+  const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CSU//5-year-college//ZH-TW", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", `X-WR-CALNAME:${escI("五專關鍵時間 " + label + " " + D.cycle)}`, "X-WR-TIMEZONE:Asia/Taipei"];
+  evs.forEach((e, i) => L.push("BEGIN:VEVENT", `UID:${APP.key}-${f}-${e.s}-${i}@csu`, `DTSTAMP:${ymd(new Date())}T000000Z`,
+    `DTSTART;VALUE=DATE:${ymd(dt(e.s))}`, `DTEND;VALUE=DATE:${ymd(endEx(e))}`, `SUMMARY:${escI((e.quit ? "⚠️" : "") + "【五專】" + e.t)}`,
+    `DESCRIPTION:${escI(`${e.d}\n（${D.cycle}，日期以正式招生簡章為準）\n${D.school.name}${D.school.unit} ${D.school.tel}`)}`,
+    "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${escI("【五專】" + e.t)}`, "TRIGGER:-P3D", "END:VALARM", "END:VEVENT"));
+  L.push("END:VCALENDAR");
+  saveFile(new Blob([L.map(fold).join("\r\n")], { type: "text/calendar;charset=utf-8" }), `五專關鍵時間-${label}.ics`);
+  toast(`📥 ${label}共 ${evs.length} 筆。點開下載的檔案，就能加入行事曆`);
+}
+function eventsOf(f) { return D.events.filter(e => f === "every" || e.p === f || e.p === "all"); }
+function countdownHTML(f) {
+  const e = eventsOf(f).find(v => endEx(v) > TODAY);
+  if (!e) return `<div class="count">這個學年度的日程都結束了，下一年度的日期請留意學校公告。</div>`;
+  const days = Math.round((dt(e.s) - TODAY) / 864e5);
+  return `<div class="count">⏳ ${days > 0 ? `下一件事：<b>${e.t}</b>，${when(e)}，還有 <b>${days}</b> 天` : `現在進行中：<b>${e.t}</b>，${when(e)}`}</div>`;
+}
+function timelineHTML(f) {
+  let mon = "", h = "";
+  eventsOf(f).forEach(e => {
+    const d = dt(e.s), m = `${d.getFullYear() - 1911} 年 ${d.getMonth() + 1} 月`;
+    if (m !== mon) { mon = m; h += `<li class="mon">${m}</li>`; }
+    h += `<li style="--c:${pcolor(e.p)}" class="${endEx(e) <= TODAY ? "past" : ""} ${e.quit ? "quit" : ""}"><div class="when">${when(e)} ${tag(e.p)}</div><div class="what">${e.quit ? "⚠️ " : ""}${e.t}</div><div class="small">${e.d}</div><a class="gc" href="${gcal(e)}" target="_blank" rel="noopener">＋ 加到 Google 日曆</a></li>`;
+  });
+  if (f === "every" || f === "xu") h += `<li class="mon">聯合免試之後</li><li style="--c:${pcolor("xu")}"><div class="when">日期由各校公告 ${tag("xu")}</div><div class="what">免試續招</div><div class="small">還有名額的學校才會辦理，請留意學校網站。</div></li>`;
+  return `<ol class="tl">${h}</ol>`;
+}
+function openTimes(f) {
+  f = f || "every";
+  const s = sheet("🗓️ 關鍵時間", `<p class="small muted">${D.cycle}（民國 116 年＝西元 2027 年）。選一個管道，只看它的日期。黃色標示的是<b>放棄截止日</b>。</p>
+    <div class="chips" id="tlChips"></div>
+    <div class="dlbox"><b>📥 下載關鍵時間到手機行事曆</b><p class="small muted">會提前 3 天提醒。下載後點開檔案，就能加入行事曆。</p>
+      <div class="dlgrid">${["wan", "you", "lian"].map(p => `<button class="dlb" data-dl="${p}" style="--c:${pcolor(p)}">${D.paths[p].short}<small>${eventsOf(p).length} 筆</small></button>`).join("")}
+      <button class="dlb all" data-dl="every">四個管道一次下載<small>${eventsOf("every").length} 筆</small></button></div>
+      <p class="small muted">免試續招的日期由各校公告，所以沒有可以下載的日期。${/Line\/|FBAN|FBAV|Instagram/i.test(navigator.userAgent) ? "<br><b>⚠️ 你正在 App 的內建瀏覽器裡，可能沒辦法下載。請用右上角選單「以預設瀏覽器開啟」，或直接點每一筆下面的「加到 Google 日曆」。</b>" : ""}</p></div>
+    <div id="tlBody"></div>`);
+  $$("[data-dl]", s).forEach(b => b.onclick = () => downloadIcs(b.dataset.dl));
+  const draw = () => {
+    $("#tlChips", s).innerHTML = [["every", "全部"], ...PORD.map(p => [p, D.paths[p].short])].map(([k, n]) =>
+      `<button class="chip" data-f="${k}" aria-pressed="${k === f}" style="--c:${k === "every" ? "#14213D" : pcolor(k)}">${n}</button>`).join("");
+    $("#tlBody", s).innerHTML = `${countdownHTML(f)}${timelineHTML(f)}
+      <p class="disc">日期依「116學年度五專招生重要日程表」。招生日期和規定可能調整，請以正式招生簡章為準。${D.school.name}${D.school.unit} ${D.school.tel}</p>`;
+    $$("[data-f]", s).forEach(b => b.onclick = () => { f = b.dataset.f; draw(); });
+  };
+  draw();
+}
+
+/* ---------------- 共用畫面片段 ---------------- */
+function deptHTML(k) {
+  const d = DEPT[k];
+  return `<p>${d.one}</p><dl class="kv"><dt>💡 適合誰</dt><dd>${d.like.join("；")}</dd><dt>📖 學什麼</dt><dd>${d.learn}</dd>
+    <dt>⭐ 正修特色</dt><dd>${d.feat.join("；")}</dd><dt>🚀 未來職業</dt><dd>${d.jobs.join("、")}</dd></dl>
+    <p class="small" style="margin-top:8px"><a href="${d.url}" target="_blank" rel="noopener" style="font-weight:900;color:var(--link)">打開${d.name}的網頁 ↗</a></p>`;
+}
+function pathHTML(p) {
+  const P = D.paths[p], k = APP.skin[p];
+  return `<p><b>${k.icon} ${k.nick}</b>＝${tag(p)} <b>${P.name}</b></p><p class="small">${k.analog}</p>
+    <ul class="plain" style="margin-top:6px">${P.rules.map(r => `<li>${r}</li>`).join("")}</ul>
+    <p class="small" style="margin-top:6px"><b>🗓️ 時間：</b>${P.when}</p>${p === "wan" ? `<p class="small" style="margin-top:6px"><b>🎁 正修加碼：</b>${D.bonus}</p>` : ""}`;
+}
+function steps4HTML(me) {
+  return `<ol class="steps4">${PORD.map(p => `<li class="${p === me ? "on" : ""}" style="--c:${pcolor(p)}"><i>${D.paths[p].n}</i><span>${APP.skin[p].icon} <b>${APP.skin[p].nick}</b>｜${D.paths[p].short}<span class="small muted">　${D.paths[p].when}</span></span></li>`).join("")}</ol>`;
+}
+function keyDatesHTML(p) {
+  return `<dl class="kv">${D.events.filter(e => e.p === p).map(e => `<dt>${when(e)}</dt><dd>${e.quit ? `<b style="background:#FFE600;color:#7A0025;padding:0 6px;border-radius:6px">⚠️ ${e.t.replace(D.paths[p].short, "")}</b>` : e.t.replace(D.paths[p].short, "")}</dd>`).join("")}</dl>`;
+}
+const warnHTML = () => `<div class="warn" role="note">⚠️ ${APP.warn}各管道放棄時間請看「<u>關鍵時間</u>」。</div>`;
+const lineHTML = (txt) => `<a class="cta line" href="${D.school.line}" target="_blank" rel="noopener">💬 ${txt || "加官方 LINE@，專人一對一回答"}</a>
+  <p class="small" style="text-align:center;margin-top:-6px">LINE ID：<b>${D.school.lineId}</b>（正修科大官方帳號，不是群組）　招生處 ${D.school.tel}</p>`;
+function sixHTML(open) {
+  return DORD.map(k => `<details class="dl" style="--c:${DEPT[k].color}" ${k === open ? "open" : ""}><summary>${DEPT[k].icon} ${DEPT[k].name}</summary><div class="in">${deptHTML(k)}</div></details>`).join("");
+}
+const topDept = () => DORD.slice().sort((a, b) => (S.sc[b] || 0) - (S.sc[a] || 0))[0];
+
+/* ---------------- 把識別證／明信片畫成圖片，可下載 ---------------- */
+function wrapText(g, text, x, y, maxW, lh) {
+  let line = "";
+  for (const ch of String(text)) { if (ch === "\n" || g.measureText(line + ch).width > maxW) { g.fillText(line, x, y); y += lh; line = ch === "\n" ? "" : ch; } else line += ch; }
+  if (line) { g.fillText(line, x, y); y += lh; }
+  return y;
+}
+const plain = h => String(h).replace(/<[^>]+>/g, "");
+/* o：kicker 小標、icon 大圖示、msg 幾行留言（可省略）、rows [[標題, 內容]]、file 檔名；顏色用 APP.card */
+async function cardImage(o) {
+  const W = 1080, P = 64, T = APP.card, c = document.createElement("canvas"), g = c.getContext("2d"); c.width = W; c.height = 2400;
+  const ff = getComputedStyle(document.body).fontFamily, f = (px, w = 700) => { g.font = `${w} ${px}px ${ff}`; };
+  g.textBaseline = "alphabetic"; g.fillStyle = T.bg; g.fillRect(0, 0, W, c.height);
+  g.fillStyle = T.head; g.fillRect(0, 0, W, 260);
+  const a = AVS[S.av] || AVS[0], cx = P + 80, cy = 130;
+  g.save(); g.beginPath(); g.arc(cx, cy, 80, 0, 7); g.closePath(); g.fillStyle = a[1]; g.fill(); g.clip();
+  if (S.photo) { try { const im = new Image(); await new Promise((r, j) => { im.onload = r; im.onerror = j; im.src = S.photo; }); g.drawImage(im, cx - 80, cy - 80, 160, 160); } catch (e) {} }
+  else { f(96); g.textAlign = "center"; g.fillText(a[0], cx, cy + 34); g.textAlign = "left"; }
+  g.restore(); g.lineWidth = 6; g.strokeStyle = "#fff"; g.beginPath(); g.arc(cx, cy, 80, 0, 7); g.stroke();
+  g.fillStyle = T.headSub; f(32); g.fillText(o.kicker, P + 190, 100);
+  g.fillStyle = "#fff"; f(68, 900); g.fillText(S.name || "同學", P + 190, 185);
+  f(100); g.textAlign = "right"; g.fillText(o.icon, W - P, 170); g.textAlign = "left";
+  let y = 340;
+  if (o.msg) { g.fillStyle = T.ink; f(42); o.msg.forEach(m => { y = wrapText(g, m, P, y, W - P * 2, 64); }); y += 24; }
+  o.rows.forEach(([k, v]) => { g.fillStyle = T.sub; f(32, 900); g.fillText(k, P, y); g.fillStyle = T.ink; f(36); y = wrapText(g, plain(v), P + 220, y, W - P * 2 - 220, 54) + 14; });
+  y += 20; g.fillStyle = T.head; g.fillRect(P, y - 44, 10, 56); f(42, 900); g.fillText("早鳥直達的關鍵時間", P + 28, y); y += 26;
+  g.fillStyle = T.sub; f(30); g.fillText(`${D.paths.wan.name}，會考前就知道結果`, P + 28, y + 30); y += 96;
+  D.events.filter(e => e.p === "wan").forEach(e => {
+    if (e.quit) { g.fillStyle = "#FFE600"; g.fillRect(P - 12, y - 44, W - P * 2 + 24, 62); g.strokeStyle = "#E6004C"; g.lineWidth = 4; g.strokeRect(P - 12, y - 44, W - P * 2 + 24, 62); }
+    g.fillStyle = e.quit ? "#7A0025" : T.ink; f(36, 900); g.fillText(when(e), P, y); f(36, e.quit ? 900 : 500); g.fillText((e.quit ? "⚠️ " : "") + e.t.replace("完全免試", ""), P + 440, y); y += 70;
+  });
+  y += 20; f(34, 900); const wt = "⚠️ " + APP.warn + "各管道放棄時間請看「關鍵時間」。";
+  const lines = Math.ceil(g.measureText(wt).width / (W - P * 2 - 48)) + 0; const bh = lines * 52 + 44;
+  g.fillStyle = "#FFE600"; g.fillRect(P, y, W - P * 2, bh); g.strokeStyle = "#E6004C"; g.lineWidth = 6; g.strokeRect(P, y, W - P * 2, bh);
+  g.fillStyle = "#7A0025"; wrapText(g, wt, P + 24, y + 58, W - P * 2 - 48, 52); y += bh + 70;
+  g.fillStyle = T.ink; f(34, 900); g.fillText(`官方 LINE@：${D.school.lineId}（專人一對一）`, P, y); y += 54;
+  f(30, 500); g.fillStyle = T.sub; g.fillText(`${D.school.name}${D.school.unit} ${D.school.tel}｜日期以 ${D.cycle} 正式招生簡章為準`, P, y); y += 60;
+  const out = document.createElement("canvas"); out.width = W; out.height = y; out.getContext("2d").drawImage(c, 0, 0);
+  return out;
+}
+async function saveCard(o) {
+  let cv; try { cv = await cardImage(o); } catch (e) { toast("圖片做不出來，請改用截圖"); return; }
+  const url = cv.toDataURL("image/png");
+  const s = sheet(`🖼️ ${o.title}`, `<p class="small muted">按「下載圖片」存到手機或電腦。如果按了沒有反應，<b>長按下面的圖片</b>也可以儲存。</p>
+    <button class="cta" id="dlimg">📥 下載圖片</button><img src="${url}" alt="${esc(o.title)}" style="display:block;width:100%;margin-top:12px;border-radius:12px;border:2px solid var(--line)">`);
+  $("#dlimg", s).onclick = () => cv.toBlob(b => { if (b && saveFile(b, o.file + ".png")) toast("📥 已經開始下載"); });
+}
+
+/* ---------------- 百寶袋 ---------------- */
+function give(id) {
+  if (S.bag.includes(id)) return;
+  S.bag.push(id); save();
+  const it = APP.items.find(x => x.id === id); if (!it) return;
+  toast(`${it.icon} 「${it.name}」放進百寶袋了`);
+  const b = $("#btnBag"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+}
+function openBag() {
+  const s = sheet("🎒 百寶袋", `<p class="small muted">點一下就能再看一次內容。目前收集 ${S.bag.length}／${APP.items.length} 件。</p>
+    <div class="bag">${APP.items.map(it => S.bag.includes(it.id)
+      ? `<button class="item" data-it="${it.id}"><span>${it.icon}</span>${it.name}</button>`
+      : `<div class="item lock"><span>❔</span>還沒拿到</div>`).join("")}</div>
+    <div id="itBody"></div>
+    <h3>隨時可以看</h3>
+    <div class="bag"><button class="item" data-fix="six"><span>📚</span>六科介紹與網頁</button><button class="item" data-fix="four"><span>🎫</span>四個升學管道</button></div>
+    <div id="fixBody"></div>
+    <div style="margin-top:14px;display:grid;gap:10px">${lineHTML()}</div>
+    <button class="cta ghost" id="again" style="margin-top:14px">🔄 從頭再玩一次</button>`);
+  $$("[data-it]", s).forEach(b => b.onclick = () => {
+    const it = APP.items.find(x => x.id === b.dataset.it);
+    $("#itBody", s).innerHTML = `<div class="hint"><b>${it.icon} ${it.name}</b><br><span style="font-weight:400">${it.desc()}</span></div>`;
+    $("#itBody", s).scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+  $$("[data-fix]", s).forEach(b => b.onclick = () => {
+    $("#fixBody", s).innerHTML = b.dataset.fix === "six" ? sixHTML(S.dept)
+      : `<div class="hint" style="font-weight:400">${PORD.map(pathHTML).join("<hr style='border:0;border-top:2px dashed var(--line);margin:10px 0'>")}</div><div style="margin-top:10px">${warnHTML()}</div>`;
+    $("#fixBody", s).scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+  let sure = false;
+  $("#again", s).onclick = e => { if (!sure) { sure = true; e.target.textContent = "再按一次，確定從頭開始"; return; } reset(); closeSheet(); go(0); };
+}
+
+/* ---------------- 關卡流程 ---------------- */
+function stage(html) { $("#stage").innerHTML = html; window.scrollTo(0, 0); }
+function drawHud() {
+  const sc = APP.scenes[S.step];
+  $("#hud").hidden = !!sc.bare;
+  $("#prog").innerHTML = `<div class="lab">${sc.lab || ""}</div><div class="bar"><i style="width:${Math.round(S.step / (APP.scenes.length - 1) * 100)}%"></i></div>`;
+  document.body.dataset.scene = sc.id || "";
+}
+function go(i) { S.step = Math.max(0, Math.min(i, APP.scenes.length - 1)); save(); drawHud(); APP.scenes[S.step].run(); }
+function next() { go(S.step + 1); }
+function back() { const sc = APP.scenes[S.step]; if (sc.back && sc.back()) return; go(S.step - 1); }
+function boot() {
+  $("#btnBag").onclick = openBag; $("#btnTl").onclick = () => openTimes(); $("#btnBack").onclick = back;
+  const old = load();
+  go(0);
+  if (old && old.step > 0) { const c = $("#resume"); if (c) { c.hidden = false; c.onclick = () => { S = Object.assign(base(), old); go(S.step); }; } }
+}
+/* ===== 遊戲一：搶票大作戰 × 五年養成蛋 =====
+ * 故事：正修有一座「夢想孵化館」。拿到門票進場的人，都能領一顆夢想蛋，花五年把它養成職人夥伴。
+ * 前半段學會搶票（四個管道和時間），後半段養蛋（找出適合的科），最後回到售票口印出自己的票根。 */
+const PET = { civ: "穩穩", arc: "畫畫", mec: "轉轉", ele: "電電", etn: "晶晶", cs: "碼碼" };
+const ROUNDS = [
+  { yr: "專一｜15 歲", adv: () => ADV.free, q: "第一年，蛋想出去走走。帶它去哪裡？", item: "free",
+    o: [["civ", "🚇", "去看正在蓋的捷運工地"], ["arc", "🏛️", "去逛一棟很美的圖書館"], ["mec", "🏭", "去看機器人組裝汽車的工廠"],
+      ["ele", "☀️", "去參觀太陽能發電廠"], ["etn", "📱", "去看最新的晶片和手機展"], ["cs", "🕶️", "去玩 AI 和 VR 體驗展"]] },
+  { yr: "專二｜16 歲", adv: () => ADV.lab, q: "蛋開始會動了！拿什麼給它玩？", item: "lab",
+    o: [["civ", "🌉", "一組可以蓋橋的積木"], ["arc", "🏠", "一套做房屋模型的材料"], ["mec", "⚙️", "一組可以拆開的齒輪和機械手臂"],
+      ["ele", "🚗", "一台太陽能小車"], ["etn", "💡", "一塊會感應、會發光的電路板"], ["cs", "💻", "一台可以寫程式的小電腦"]] },
+  { yr: "專三｜17 歲", adv: () => ADV.cert, q: "蛋想考一張證照。陪它練什麼？", item: "cert",
+    o: [["civ", "📐", "用儀器測量土地"], ["arc", "🖥️", "用電腦畫出 3D 的房子"], ["mec", "🔩", "用機器把零件做出來"],
+      ["ele", "🔌", "練習配電線、接電路"], ["etn", "🔬", "練習焊接電子零件"], ["cs", "🎮", "寫程式做一個小遊戲"]] },
+  { yr: "專四｜18 歲", adv: () => `${ADV.intern}</p><p>${ADV.later}`, wing: 1, q: "蛋要去企業實習了！它想去哪裡？", item: "intern",
+    o: [["civ", "🏗️", "蓋橋鋪路的工程團隊"], ["arc", "✏️", "設計房子的建築師事務所"], ["mec", "🦾", "做自動化機器的公司"],
+      ["ele", "🔋", "做電動車和綠能的公司"], ["etn", "🧪", "做晶片的半導體公司"], ["cs", "📲", "做 App 和 AI 的軟體公司"]] },
+  { yr: "專五｜19 歲", adv: () => ADV.degree, q: "最後一年，畢業專題想做什麼？", item: "degree",
+    o: [["civ", "🛰️", "用無人機幫城市做立體地圖"], ["arc", "🏡", "設計一棟有陽光又省電的房子"], ["mec", "🤖", "做一隻會夾東西的機械手臂"],
+      ["ele", "⚡", "幫校園設計太陽能充電站"], ["etn", "📡", "做一個偵測空氣的感測器"], ["cs", "💬", "訓練一個會聊天的 AI 助手"]] }
+];
+const REMIND = "請依照你自己的興趣幫它選";
+const SEGS = [["", 8], ["wan", 14], ["ex", 8], ["you", 14], ["", 10], ["lian", 14], ["", 8], ["xu", 14], ["", 10]];
+const MISSIONS = [
+  { p: "wan", t: "搶到<b class=\"hl\">最早開賣</b>的那一張！", yes: "搶到了！早鳥直達票在會考前就知道結果。" },
+  { p: "you", t: "搶到可以<b class=\"hl\">一次填 30 個志願</b>的那一張！", yes: "搶到了！全台選位票不限地區、學校和科別。" },
+  { p: "lian", t: "搶到要<b class=\"hl\">親自到現場選位</b>的那一張！", yes: "搶到了！現場選位票要本人到學校選科。" }
+];
+const MISS = { wan: "這是早鳥直達票，最早開賣的那一張。", you: "這是全台選位票，可以填 30 個志願。", lian: "這是現場選位票，要親自到學校。", xu: "這是加開場次票，排在最後。" };
+
+function eggSVG(n, cls) {
+  const k = n ? topDept() : "", c = k && S.sc[k] ? DEPT[k].color : "#3DDBB4";
+  const crack = n >= 3 ? `<path d="M52 92l12 8 10-12 12 10 12-10 10 8" fill="none" stroke="#1B2350" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : "";
+  const eyes = n >= 2 ? `<circle cx="66" cy="74" r="4.5" fill="#1B2350"/><circle cx="94" cy="74" r="4.5" fill="#1B2350"/><path d="M72 84q8 7 16 0" fill="none" stroke="#1B2350" stroke-width="3" stroke-linecap="round"/>` : "";
+  return `<svg viewBox="0 0 160 190" class="${cls || ""}" role="img" aria-label="夢想蛋"><ellipse cx="80" cy="176" rx="46" ry="8" fill="#0006"/>
+    <path d="M80 14c34 0 58 52 58 92 0 38-26 62-58 62s-58-24-58-62c0-40 24-92 58-92z" fill="#FFFDF6" stroke="#1B2350" stroke-width="4"/>
+    <path d="M24 112c18-10 34 8 56-2s38 6 56-4c-2 36-27 62-56 62s-56-24-56-56z" fill="${c}" opacity="${.25 + n * .15}"/>
+    <circle cx="52" cy="54" r="${7 + n}" fill="${c}" opacity=".7"/><circle cx="108" cy="46" r="${4 + n}" fill="${c}" opacity=".5"/><circle cx="116" cy="92" r="${3 + n}" fill="${c}" opacity=".6"/>${eyes}${crack}</svg>`;
+}
+function petSVG(k) {
+  const d = DEPT[k];
+  return `<svg viewBox="0 0 180 190" role="img" aria-label="職人夥伴 ${PET[k]}"><ellipse cx="90" cy="178" rx="50" ry="8" fill="#0006"/>
+    <path d="M30 150l14-22 16 16 14-20 16 20 16-18 14 18 14-16 16 22-8 22H38z" fill="#FFFDF6" stroke="#1B2350" stroke-width="4" stroke-linejoin="round"/>
+    <circle cx="62" cy="46" r="16" fill="${d.color}" stroke="#1B2350" stroke-width="4"/><circle cx="118" cy="46" r="16" fill="${d.color}" stroke="#1B2350" stroke-width="4"/>
+    <ellipse cx="90" cy="96" rx="52" ry="56" fill="${d.color}" stroke="#1B2350" stroke-width="4"/>
+    <ellipse cx="90" cy="112" rx="30" ry="26" fill="#FFFDF6" opacity=".85"/>
+    <circle cx="72" cy="84" r="7" fill="#1B2350"/><circle cx="108" cy="84" r="7" fill="#1B2350"/><circle cx="74" cy="82" r="2.4" fill="#fff"/><circle cx="110" cy="82" r="2.4" fill="#fff"/>
+    <path d="M78 102q12 12 24 0" fill="none" stroke="#1B2350" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="60" cy="100" r="6" fill="#FF8FB3" opacity=".8"/><circle cx="120" cy="100" r="6" fill="#FF8FB3" opacity=".8"/>
+    <circle cx="146" cy="130" r="22" fill="#FFD23F" stroke="#1B2350" stroke-width="4"/><text x="146" y="139" text-anchor="middle" font-size="24">${d.icon}</text></svg>`;
+}
+/* 每一年可以複選；越後面的年份多一點點權重，同分時以後來的選擇為準 */
+function rescore() { S.sc = {}; (S.x.picks || []).forEach((ks, i) => (ks || []).forEach(k => { S.sc[k] = (S.sc[k] || 0) + 1 + i * .01; })); }
+
+const APP = {
+  key: "csu5-ticket-egg-116",
+  card: { bg: "#FFFDF6", head: "#1B2350", headSub: "#FFD23F", ink: "#1B2350", sub: "#C2185B" },
+  warn: "已經報到又想改訂別的場次，須在期限前辦理放棄。",
+  skin: {
+    wan: { icon: "🐦", nick: "早鳥直達票", analog: "最早開賣的票。一張票指定 1 個座位（1 所學校的 1 個科），會考前就知道有沒有買到。" },
+    you: { icon: "🌏", nick: "全台選位票", analog: "一次寫下最多 30 個想坐的位子，電腦會幫你排到順位最前面、還有空位的那一個。" },
+    lian: { icon: "🎪", nick: "現場選位票", analog: "親自到售票現場（學校），依順序當場選座位（科別）。前兩張沒賣完的位子也會加進來。" },
+    xu: { icon: "➕", nick: "加開場次票", analog: "還有空位的學校會再加開一場，開賣時間看各校公告。" }
+  },
+  items: [
+    { id: "t4", icon: "🎟️", name: "售票時刻表", desc: () => `四張票一張接一張開賣：${steps4HTML()}` },
+    { id: "tip", icon: "💡", name: "搶票祕訣", desc: () => `對正修六個科有興趣，建議參加越早的管道，先用「早鳥直達票」拿到入學門票。之後有其他選擇，在期限內辦理放棄就可以。<div style="margin-top:8px">${warnHTML()}</div>` },
+    { id: "free", icon: "🪙", name: "專一：免學費", desc: () => ADV.free },
+    { id: "lab", icon: "🔬", name: "專二：大學實驗室", desc: () => ADV.lab },
+    { id: "cert", icon: "📜", name: "專三：專業證照", desc: () => ADV.cert },
+    { id: "intern", icon: "🤝", name: "專四：專題與實習", desc: () => `${ADV.intern}<br>${ADV.later}<br>${ADV.wing}` },
+    { id: "degree", icon: "🎓", name: "專五：副學士學位", desc: () => `${ADV.degree}<br>${AFTER.map(a => `${a.icon} <b>${a.name}</b>：${a.d}`).join("<br>")}` },
+    { id: "pet", icon: "🐣", name: "我的職人夥伴", desc: () => `<b>${PET[S.dept]}</b>來自 <b>${DEPT[S.dept].name}</b>。${deptHTML(S.dept)}` }
+  ],
+  scenes: [
+    { id: "title", bare: 1, run() {
+      stage(`<div class="card marquee"><p class="kicker">正修科技大學五專部｜${D.cycle}</p><h1>搶票大作戰</h1><p class="x2">× 五年養成蛋</p>
+        <p class="tagline">認識五專入學方法與個人興趣</p>
+        <p class="lead1">搶門票</p><p>走進「夢想孵化館」領一顆只屬於你的蛋。</p><p>花五年把蛋養大，看它變成哪一種職業夥伴！</p>
+        <p class="small" style="color:#B9C0E6;margin-top:10px">給國中同學的升學小遊戲，大約 7 分鐘。</p></div>
+        <div class="eggbox">${eggSVG(0, "wob")}</div>
+        <button class="cta" id="go">開始！先辦會員卡</button><button class="cta ghost" id="resume" hidden>繼續上次的進度</button>`);
+      $("#go").onclick = () => { reset(); good(); next(); };
+    } },
+    { id: "me", lab: "辦會員卡", run() { profileScene({ kicker: "售票亭｜第 1 步", title: "先辦一張會員卡", lead: "搶票要用會員卡。取一個暱稱，再選一張大頭照。", btn: "會員卡辦好了" }); } },
+    { id: "story", lab: "聽故事", run() {
+      stage(`<div class="card"><p class="kicker">${who()}，歡迎來到售票亭</p><h2>你聽過「夢想孵化館」嗎？</h2>
+        <div class="panels">
+          <div class="panel"><div class="pic">🏟️</div><p>正修有一座<b>夢想孵化館</b>，裡面有六個科：土木、建築、機械、電機、電子、資工。</p></div>
+          <div class="panel"><div class="pic">🥚</div><p>拿著門票進場的人，都能領到一顆<b>夢想蛋</b>。你陪它五年，它就會長成你的<b>職人夥伴</b>。</p></div>
+          <div class="panel"><div class="pic">🎟️</div><p>門票分<b>四個時段</b>開賣。所以第一件事是：<b>學會搶票</b>。拿到票，再進場領蛋！</p></div>
+        </div></div><button class="cta" id="ok">好，教我搶票</button>`);
+      $("#ok").onclick = next;
+    } },
+    { id: "four", lab: "看售票時刻表", run() {
+      const seen = new Set(S.x.seen || []); let open = "";
+      const draw = () => {
+        stage(`<div class="card"><p class="kicker">搶票教室 1／3</p><h2>門票一共有四種，一張接一張開賣</h2>
+          <p><b>這一張沒買到，還有下一張。</b>點開每一張看看。</p>
+          <div class="tix">${PORD.map(p => { const k = APP.skin[p]; return `<button class="tk ${open === p ? "open" : ""}" data-p="${p}" style="--c:${pcolor(p)}" aria-expanded="${open === p}">
+            <div class="hd"><span>${k.icon}</span><span>第 ${D.paths[p].n} 張　${k.nick}</span></div><span class="st">${seen.has(p) ? "✅<br>看過" : "👆<br>點我"}</span>
+            ${open === p ? `<div class="bd">${pathHTML(p)}</div>` : ""}</button>`; }).join("")}</div></div>
+          <button class="cta" id="ok" ${seen.size < 4 ? "disabled" : ""}>${seen.size < 4 ? `還有 ${4 - seen.size} 張沒看` : "看懂了，來搶票！"}</button>`);
+        $$(".tk").forEach(b => b.onclick = () => { open = open === b.dataset.p ? "" : b.dataset.p; if (open) { seen.add(open); S.x.seen = [...seen]; save(); } draw(); const el = $(".tk.open"); if (el) el.scrollIntoView({ block: "nearest" }); });
+        $("#ok").onclick = () => { give("t4"); next(); };
+      };
+      draw();
+    } },
+    { id: "rush", lab: "搶票小遊戲", run() {
+      let m = 0, pos = 0, last = 0, raf = 0, speed = 1, alive = true; const done = [];
+      const range = {}; let acc = 0; SEGS.forEach(([k, w]) => { if (k) range[k] = [acc, acc + w]; acc += w; });
+      const draw = () => {
+        const M = MISSIONS[m];
+        stage(`<div class="card"><p class="kicker">搶票教室 2／3｜任務 ${Math.min(m + 1, 3)}／3</p><h2 class="mission">${M ? M.t : "三張票都搶到了！"}</h2>
+          <p class="small muted">${M ? "白色游標代表「現在的日期」。它走進彩色的開賣時段時，按下「搶票！」。也可以直接點那一格。" : "你已經知道四張票的先後順序了。"}</p>
+          <div class="rail" id="rail">${SEGS.map(([k, w]) => k === "ex" ? `<div class="seg ex" style="width:${w}%">會<br>考</div>`
+            : k ? `<button class="seg w ${done.includes(k) ? "done" : ""}" data-p="${k}" style="width:${w}%;--c:${pcolor(k)}">${APP.skin[k].nick.slice(0, 2)}<br>${APP.skin[k].nick.slice(2, 4)}</button>` : `<div class="seg" style="width:${w}%"></div>`).join("")}<div class="cur" id="cur"></div></div>
+          <div class="months"><span>4 月底</span><span>5 月</span><span>6 月</span><span>7 月</span><span>之後</span></div>
+          <div id="fb"></div><div class="got">${done.map(p => `<span class="tag" style="--c:${pcolor(p)}">✔ ${APP.skin[p].nick}</span>`).join("")}</div></div>
+          ${M ? `<button class="cta grab" id="grab">🎟️ 搶票！</button>` : `<button class="cta" id="ok">下一步：搶票祕訣</button>`}`);
+        if (!M) { $("#ok").onclick = next; return; }
+        const judge = p => {
+          if (p === M.p) { good(); done.push(p); m++; draw(); $("#fb").innerHTML = `<div class="hint">✅ ${M.yes}</div>`; if (m === 3) win(); return; }
+          bad(); speed = Math.max(.6, speed - .15);
+          $("#fb").innerHTML = `<div class="hint">💡 ${p ? MISS[p] + "任務要的不是這一張，再試一次。" : "現在還沒開賣。等游標走進彩色的格子再按。"}</div>`;
+        };
+        $("#grab").onclick = () => { const x = pos * 100; judge(Object.keys(range).find(k => x >= range[k][0] && x <= range[k][1]) || ""); };
+        $$("#rail .w").forEach(b => b.onclick = () => judge(b.dataset.p));
+      };
+      const tick = t => {
+        if (!alive || !document.body.contains($("#rail"))) { alive = false; return; }
+        if (last) pos = (pos + (t - last) / 6500 * speed) % 1; last = t;
+        const c = $("#cur"); if (c) c.style.left = `calc(${pos * 100}% - 2px)`;
+        raf = requestAnimationFrame(tick);
+      };
+      draw(); raf = requestAnimationFrame(tick);
+    } },
+    { id: "tip", lab: "搶票祕訣", run() {
+      let q = S.x.tipq || 0;
+      const Q = [
+        { q: `${who()}很想進夢想孵化館。什麼時候搶票最好？`, o: [["🐢", "等到最後一張再說", "越晚開賣的票，剩下的位子通常越少。想一想：哪一張最早開賣？"], ["🐦", "越早越好，先用「早鳥直達票」拿到門票", ""], ["🎲", "隨便挑一張", "有興趣的話，最早的那一張可以讓你最早安心喔。"]], ok: 1,
+          yes: "沒錯！對正修六個科有興趣，建議參加越早的管道，先把入學門票拿到手。" },
+        { q: "拿到門票之後，又有了其他選擇。怎麼辦？", o: [["🔒", "不能改了，只能用這一張", "別擔心，可以改的。關鍵是「期限」。"], ["🗓️", "在期限內辦理放棄，就可以選別的", ""]], ok: 1,
+          yes: "答對了！先拿門票不吃虧，只要記得各管道的放棄期限。" }
+      ];
+      const ask = () => {
+        const c = Q[q];
+        stage(`<div class="card"><p class="kicker">搶票教室 3／3｜搶票祕訣 ${q + 1}／2</p><h2>${c.q}</h2>
+          <div class="opts">${c.o.map((o, j) => `<button class="opt" data-j="${j}"><span>${o[0]}</span><span>${o[1]}</span></button>`).join("")}</div><div id="fb"></div></div><div id="nx"></div>`);
+        $$(".opt").forEach(b => b.onclick = () => {
+          const j = +b.dataset.j;
+          if (j !== c.ok) { bad(); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no"); $("#fb").innerHTML = `<div class="hint">💡 ${c.o[j][2]}</div>`; return; }
+          good(); b.classList.add("ok"); $$(".opt").forEach(x => x.disabled = true);
+          $("#fb").innerHTML = `<div class="hint">✅ ${c.yes}</div>${q === 1 ? `<div style="margin-top:10px">${warnHTML()}</div>` : ""}`;
+          $("#nx").innerHTML = `<button class="cta">${q === 0 ? "下一題" : "拿著門票進場！"}</button>`;
+          $("#nx button").onclick = () => { if (q === 0) { q = 1; S.x.tipq = 1; save(); ask(); } else { give("tip"); next(); } };
+          $("#nx").scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
+      };
+      ask();
+    }, back() { if (S.x.tipq) { S.x.tipq = 0; save(); go(S.step); return true; } } },
+    { id: "gate", lab: "進場領蛋", run() {
+      stage(`<div class="card"><p class="kicker">驗票成功！歡迎進場</p><h2>夢想館的館長將一顆夢想蛋交到你手上</h2>
+        <div class="eggbox">${eggSVG(0, "wob")}</div>
+        <p>「${who()}，這顆蛋現在還不知道自己會變成什麼。」</p>
+        <p>「接下來的<b>五年</b>，就像在五專讀書的五年。你帶它做什麼，它就會長成什麼。<b class="remind">${REMIND}</b>，沒有對錯。」</p>
+        <p class="small muted">每過一年，館內還會送你一份好消息。</p></div><button class="cta" id="ok">開始養蛋</button>`);
+      $("#ok").onclick = () => { S.x.picks = []; S.x.r = 0; rescore(); next(); };
+    } },
+    { id: "egg", lab: "五年養成蛋", run() {
+      S.x.picks = S.x.picks || []; let r = S.x.r || 0;
+      const draw = () => {
+        const R = ROUNDS[r]; S.x.picks.length = r; rescore(); const sel = new Set();
+        stage(`<div class="card"><div class="year" aria-label="第 ${r + 1} 年，共 5 年">${ROUNDS.map((_, i) => `<i class="${i <= r ? "on" : ""}"></i>`).join("")}</div>
+          <p class="kicker">養成第 ${r + 1} 年｜${R.yr}</p>
+          <div class="eggbox">${eggSVG(r, "wob")}</div>
+          <div class="badges">${[...new Set(S.x.picks.flat())].map(k => `<span style="--c:${DEPT[k].color}">${DEPT[k].icon}</span>`).join("")}</div>
+          <div class="news"><b>🎁 今年的好消息</b><p>${R.adv()}</p></div>
+          ${R.wing ? `<div class="news wing"><b>🪽 什麼是「五專展翅計畫」？</b><p>專四、專五可以申請。<b>合作企業</b>每個月給你至少 6,000 元生活獎學金，<b>教育部</b>補助專四、專五的學雜費。畢業後到這家企業工作 2 年，一畢業就有工作。</p></div>` : ""}
+          <h2>${R.q}</h2><p class="remind">${REMIND}（可以複選，最多 3 個）</p>
+          <div class="grid2 multi">${R.o.map(o => `<button class="opt" data-k="${o[0]}" aria-pressed="false"><span>${o[1]}</span><span>${o[2]}</span></button>`).join("")}</div></div>
+          <button class="cta" id="ok" disabled>先選至少 1 個</button>`);
+        const btn = $("#ok");
+        $$(".opt").forEach(b => b.onclick = () => {
+          const k = b.dataset.k;
+          if (sel.has(k)) sel.delete(k); else { if (sel.size >= 3) return toast("最多選 3 個，先取消一個再選"); sel.add(k); }
+          b.setAttribute("aria-pressed", sel.has(k)); beep([[600, .04]]);
+          btn.disabled = !sel.size; btn.textContent = sel.size ? (r < 4 ? `選好了（${sel.size} 個），到下一年` : `選好了（${sel.size} 個），五年到了！`) : "先選至少 1 個";
+        });
+        btn.onclick = () => { good(); S.x.picks[r] = [...sel]; give(R.item); if (r < 4) { r++; S.x.r = r; save(); draw(); } else { rescore(); S.dept = ""; S.x.hatched = 0; save(); next(); } };
+      };
+      draw();
+    }, back() { if (S.x.r > 0) { S.x.r--; S.x.picks.length = S.x.r; save(); go(S.step); return true; } } },
+    { id: "hatch", lab: "孵化！", run() {
+      rescore(); const top = topDept(); let taps = 0, pick = S.dept || top;
+      const knock = () => {
+        stage(`<div class="card" style="text-align:center"><p class="kicker">五年到了</p><h2>蛋殼裡有聲音！敲三下，幫它出來</h2>
+          <div class="eggbox"><button id="egg" aria-label="敲蛋殼" style="padding:0">${eggSVG(4)}</button></div>
+          <p class="small muted" id="cnt">敲 ${taps}／3 下</p></div>`);
+        $("#egg").onclick = () => { taps++; beep([[300 + taps * 120, .1]]); const s = $("#egg svg"); s.classList.remove("shake"); void s.getBoundingClientRect(); s.classList.add("shake"); $("#cnt").textContent = `敲 ${taps}／3 下`; if (taps >= 3) setTimeout(() => { win(); confetti(); S.x.hatched = 1; save(); show(); }, 500); };
+      };
+      const show = () => {
+        stage(`<div class="card"><p class="kicker">孵出來了！</p><h2>你的職人夥伴是「${PET[pick]}」，來自${DEPT[pick].name}</h2>
+          <div class="eggbox">${petSVG(pick)}</div>
+          <p class="small muted" style="text-align:center">${pick === top ? "這五年你最常選的，就是這一科的事。" : "這是你自己選的科。"}</p>
+          ${deptHTML(pick)}</div>
+          <div class="card"><h2>你覺得這個職人夥伴像你嗎？</h2><p><b>請選一個你最有興趣的科別。</b></p><p class="small muted">六個科各有厲害的地方，點一點可以看看別科的夥伴。</p>
+          <div class="grid2">${DORD.map(k => `<button class="opt ${k === pick ? "sel" : ""}" data-k="${k}"><b>${DEPT[k].icon} ${DEPT[k].name}</b><small>夥伴「${PET[k]}」${k === top ? "｜蛋的選擇" : ""}</small></button>`).join("")}</div></div>
+          <button class="cta" id="ok">就選${DEPT[pick].name}，領取${DEPT[pick].name}識別證</button>`);
+        $$(".grid2 .opt").forEach(b => b.onclick = () => { pick = b.dataset.k; show(); });
+        $("#ok").onclick = () => { S.dept = pick; give("pet"); next(); };
+      };
+      S.x.hatched ? show() : knock();
+    } },
+    { id: "final", lab: "我的識別證", run() {
+      const d = DEPT[S.dept]; S.done = true; save(); win(); confetti();
+      stage(`<div class="card"><p class="kicker">領取識別證</p><h2>恭喜！這是你的${d.name}識別證</h2><p>${who()}和「${PET[S.dept]}」一起領到了${d.name}識別證。門票搶到了，想讀的科也找到了。</p></div>
+        <div class="card stub"><div class="top">${meHTML(64)}<div><div class="small" style="font-weight:900">夢想孵化館｜${d.name}識別證</div><div class="nm">${who()}</div></div><div style="margin-left:auto;font-size:44px">${d.icon}</div></div>
+          <div class="cut"></div><div class="body">
+          <dl class="kv"><dt>📚 科別</dt><dd>正修科技大學五專部 <b>${d.name}</b></dd><dt>🐣 夥伴</dt><dd>${PET[S.dept]}</dd>
+          <dt>🎟️ 門票</dt><dd><b>早鳥直達票</b>（${D.paths.wan.name}）</dd><dt>🚀 未來</dt><dd>${d.jobs.join("、")}</dd></dl>
+          <h3>早鳥直達票的關鍵時間</h3>${keyDatesHTML("wan")}
+          <p class="small" style="margin-top:6px">🎁 ${D.bonus}</p><div class="bar"></div></div></div>
+        <button class="cta" id="fDl">📥 下載我的${d.name}識別證</button>
+        ${warnHTML()}
+        <div class="card"><h2>搶票祕訣：越早越好</h2><p>對正修六個科有興趣，建議從最早的 <b>早鳥直達票</b> 開始，先拿到入學門票。之後有其他選擇，在期限內辦理放棄就可以。</p>
+          <p class="small muted">這一張沒買到，還有下一張：</p>${steps4HTML("wan")}</div>
+        <button class="cta" id="fTl">🗓️ 看關鍵時間，下載到行事曆</button>
+        ${lineHTML()}
+        <div class="row"><button class="cta ghost" id="fBag">🎒 打開百寶袋</button><a class="cta ghost" href="${d.url}" target="_blank" rel="noopener">${d.icon} ${d.name}網頁 ↗</a></div>
+        <div class="card"><h3 style="margin-top:0">給你的小提醒</h3><p class="small">興趣可以慢慢找，這張識別證只是一個起點。把它下載或截圖存起來，帶著它和爸媽、老師聊聊你喜歡的科。</p>
+          <p class="disc">招生日期和規定以 ${D.cycle} 正式招生簡章為準。</p></div>
+        <button class="cta ghost" id="fAgain">🔄 換個選擇再玩一次</button>`);
+      $("#fDl").onclick = () => saveCard({ title: `${d.name}識別證`, file: `正修五專-${d.name}識別證`, kicker: `夢想孵化館｜${d.name}識別證`, icon: d.icon,
+        rows: [["科別", `正修科技大學五專部 ${d.name}`], ["夥伴", PET[S.dept]], ["門票", `早鳥直達票（${D.paths.wan.name}）`], ["學什麼", d.learn], ["未來", d.jobs.join("、")]] });
+      $("#fTl").onclick = () => openTimes("wan"); $("#fBag").onclick = openBag; $("#fAgain").onclick = () => { reset(); go(0); };
+    } }
+  ]
+};
+
+boot();
+</script>
+</body>
+</html>
